@@ -40,7 +40,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
 
   // Pagination
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 1; // to test we put the limit to 1 per page
+  const limit = parseInt(req.query.limit) || 25; // to test the pagination we can set the limit to 1 per page
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
   const total = await Bootcamp.countDocuments();
