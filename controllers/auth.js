@@ -51,7 +51,8 @@ exports.login = asyncHandler(async (req, res, next) => {
 });
 
 // Get token from model, create cookie and send response
-const sendTokenResponse = (user, statusCode, response) => {
+const sendTokenResponse = (user, statusCode, res) => {
+
   // Create token
   const token = user.getSignedJwtToken();
 
@@ -61,6 +62,7 @@ const sendTokenResponse = (user, statusCode, response) => {
     ),
     httpOnly: true
   };
+
 
   if (process.env.NODE_ENV === "production") {
     options.secure = true;
