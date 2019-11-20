@@ -35,6 +35,11 @@ const CourseSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId, // link the bootcamp with the id
     ref: "Bootcamp", // tell with schema where the bootcamp can be founded
     required: true // every course should have a bootcamp
+  },
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true
   }
 });
 

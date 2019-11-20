@@ -28,23 +28,53 @@ exports.getBootcamp = asyncHandler(async (req, res, next) => {
 // @route       POST /api/v1/bootcamps
 // @access      Private
 exports.createBootcamp = asyncHandler(async (req, res, next) => {
+  // Add user to req.body
+  req.body.user = req.user.id;
+
+  // Check for published bootcamp
+  const publishedBootcamp = await Bootcamp.findOne({ user: req.user.id });
+
+  // If the user is not an admin he can only add one bootcamp
+  if (publishedBootcamp && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse(
+        `User with ID ${req.user.id} has already published a bootcamp`,
+        400
+      )
+    );
+  }
+
   const bootcamp = await Bootcamp.create(req.body);
-  res.status(201).json({ sucess: true, data: bootcamp });
+
+  res.status(201).json({
+    sucess: true,
+    data: bootcamp
+  });
 });
 
 // @desc        update a bootcamp
 // @route       PUT /api/v1/bootcamps/:id
 // @access      Private
 exports.updateBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
+  let bootcamp = await Bootcamp.findById(req.params.id);
   if (!bootcamp) {
     return next(
       new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
     );
   }
+
+  // Make sur user is bootcamp owner
+  if (req.user.id !== bootcamp.user.toString() && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse("You cannot update a bootcamp you did not post", 401)
+    );
+  }
+
+  boocamp = await Bootcamp.findOneAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true
+  });
+
   res.status(200).json({ sucess: true, data: bootcamp });
 });
 // @desc        delete a bootcamp
@@ -55,6 +85,13 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
   if (!bootcamp) {
     return next(
       new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
+  }
+
+  // Make sur user is bootcamp owner
+  if (req.user.id !== bootcamp.user.toString() && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse("You cannot delete a bootcamp you did not post", 401)
     );
   }
 
@@ -100,6 +137,13 @@ exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
     );
   }
 
+  // Make sur user is bootcamp owner
+  if (req.user.id !== bootcamp.user.toString() && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse("You cannot edit a bootcamp you did not post", 401)
+    );
+  }
+
   if (!req.files) {
     return next(new ErrorResponse("Please add a file to upload", 400));
   }
@@ -107,7 +151,7 @@ exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
   const file = req.files.file;
   console.log(req.files.file);
 
-  // Make sur taht the image is a photo : we know thant every photo type mimetype will start with image/png or image/jpg
+  // Make sur that the image is a photo : we know thant every photo type mimetype will start with image/png or image/jpg
   if (!file.mimetype.startsWith("image")) {
     return next(new ErrorResponse("Please upload an image file", 400));
   }
