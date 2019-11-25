@@ -35,6 +35,11 @@ const CourseSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId, // link the bootcamp with the id
     ref: "Bootcamp", // tell with schema where the bootcamp can be founded
     required: true // every course should have a bootcamp
+  },
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true
   }
 });
 
@@ -42,7 +47,7 @@ const CourseSchema = new mongoose.Schema({
 CourseSchema.statics.getAverageCost = async function(bootcampId) {
   const obj = await this.aggregate([
     {
-      $match: { boocamp: bootcampId }
+      $match: { bootcamp: bootcampId }
     },
     {
       $group: {
@@ -62,11 +67,11 @@ CourseSchema.statics.getAverageCost = async function(bootcampId) {
 
 // Call getAverageCost after save
 CourseSchema.post("save", function() {
-  this.constructor.getAverageCost(this.boocamp);
+  this.constructor.getAverageCost(this.bootcamp);
 });
 // Call getAverageCost before remove
 CourseSchema.pre("remove", function() {
-  this.constructor.getAverageCost(this.boocamp);
+  this.constructor.getAverageCost(this.bootcamp);
 });
 
 module.exports = mongoose.model("Course", CourseSchema);
