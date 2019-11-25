@@ -9,6 +9,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 const helmet = require("helmet");
 const xss = require("xss-clean");
 const hpp = require("hpp");
+const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 const errorHandler = require("./middleware/error");
@@ -59,7 +60,10 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Prevent http param pollution
-app.use(hpp);
+app.use(hpp());
+
+// Enable CORS
+app.use(cors());
 
 // Set static forlder
 app.use(express.static(path.join(__dirname, "public")));
